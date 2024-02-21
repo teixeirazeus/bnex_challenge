@@ -1,0 +1,39 @@
+# docker-compose.yml
+version: "3.8"
+services:
+  db-server:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: bnexdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  back-end-server:
+    build:
+      context: ./server
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db-server
+
+  front-end-server:
+    build:
+      context: ./produto-app
+    volumes:
+      - ./produto-app:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+      - "80:80"
+    depends_on:
+      - back-end-server
+
+volumes:
+  postgres_data:
